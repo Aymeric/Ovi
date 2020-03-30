@@ -1,9 +1,241 @@
-<script src="https://cdn.babylonjs.com/babylon.js"></script>
-<script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
-<script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
-<script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
-<script src="https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
-<script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
-<script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
-<script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
-test
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title>Babylon Template</title>
+
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+
+        <script src="https://preview.babylonjs.com/babylon.js"></script>
+        <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+        <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+        <script src="https://cdn.babylonjs.com/cannon.js"></script>
+        <!--
+        <script src="https://cdn.babylonjs.com/ammo.js"></script>
+        -->
+    </head>
+
+   <body>
+
+    <canvas id="renderCanvas" touch-action="none"></canvas> //touch-action="none" for best results from PEP
+
+    <script>
+        var canvas = document.getElementById("renderCanvas"); // Get the canvas element
+        var engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+
+        const gravity = -30;
+
+        var initGUI = function () {
+            // GUI
+            var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+            var panel = new BABYLON.GUI.StackPanel();
+            //panel.width = 0.5;
+            panel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+            panel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+            advancedTexture.addControl(panel); 
+
+            var button = BABYLON.GUI.Button.CreateSimpleButton("but", "Roll Egg");
+            button.width = 0.15;
+            button.height = "40px";
+            button.color = "white";
+            button.background = "green";
+            button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+            button.onPointerUpObservable.add(function() {
+                rollEgg();
+                //gravY(-25);
+            });
+            /*
+            var button = BABYLON.GUI.Button.CreateImageWithCenterTextButton("but", "Click me!", "textures/grass.png");
+                button.width = 0.2;
+                button.height = "40px";
+                button.color = "white";
+                button.background = "green";
+                */
+            panel.addControl(button);
+        }
+
+        var rollEgg = function () {
+            var sphere = BABYLON.Mesh.CreateSphere("sphere", 8, 2, scene);//BABYLON.MeshBuilder.CreateSphere("sphere", {diameter:2}, scene);
+            sphere.position = {x: Math.random(), y: 20, z: 0};
+            var eggmat = new BABYLON.StandardMaterial("egg", scene);
+            //eggmat.diffuseTexture = new BABYLON.Texture("https://png.pngtree.com/png-clipart/20190920/original/pngtree-easter-egg-png-free-png-image_4669160.jpg", scene);
+            eggmat.diffuseTexture = new BABYLON.Texture("https://upload.wikimedia.org/wikipedia/commons/5/54/Bg-easter-eggs.jpg", scene);            
+            //eggmat.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
+            eggmat.diffuseTexture.hasAlpha = true;
+            eggmat.backFaceCulling = false;
+            sphere.material = eggmat;
+
+            sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, friction: 0.1, restitution: 0.9 }, scene);
+            /*
+            sphere.physicsImpostor.registerOnPhysicsCollide([ground.physicsImpostor, box.physicsImpostor], function(main, collided) {
+	            main.object.material.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
+            });
+            */
+        }
+
+        /******* Add the create scene function ******/
+        var createScene = function () {
+
+            // Create the scene space
+            var scene = new BABYLON.Scene(engine);
+
+            //scene.clearColor = BABYLON.Color3.Purple();
+
+            // Add a camera to the scene and attach it to the canvas
+            //var camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 2, 2, new BABYLON.Vector3(0,5,25), scene);
+            var camera = new BABYLON.ArcRotateCamera("Camera", 3 * Math.PI / 2, Math.PI / 2, 35, new BABYLON.Vector3(0,7,0), scene);//, BABYLON.Vector3.Zero()
+            //var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+            camera.attachControl(canvas, true);
+
+            var camerasBorderFunction = function () {
+                //Angle
+                if (camera.beta < 0.1)
+                    camera.beta = 0.1;
+                else if (camera.beta > (Math.PI / 2) * 0.9)
+                    camera.beta = (Math.PI / 2) * 0.9;
+
+                //Zoom
+                if (camera.radius > 80)
+                    camera.radius = 80;
+
+                if (camera.radius < 20)
+                    camera.radius = 20;
+            };
+            scene.registerBeforeRender(camerasBorderFunction);
+
+            // Add lights to the scene
+            var light1 = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
+            //var light2 = new BABYLON.PointLight("light2", new BABYLON.Vector3(0, 1, -1), scene);
+
+            var box = BABYLON.MeshBuilder.CreateBox("myBox", {height: 1, width: 3, depth: 3}, scene);
+            box.position = {x: 0, y: 10, z: 0 };
+            box.material = new BABYLON.StandardMaterial("s-mat", scene);
+            box.material.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
+           
+
+            // Add and manipulate meshes in the scene
+            var cone = BABYLON.MeshBuilder.CreateCylinder("cone", {diameterTop:0, height: 4, tessellation: 96}, scene);
+            cone.position = {x: 0, y: 5, z: 0 };
+            cone.material = new BABYLON.StandardMaterial("s-mat", scene);
+            cone.material.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
+            // mat.diffuseTexture.hasAlpha = true;
+            // mat.backFaceCulling = false;
+
+            // Our built-in 'ground' shape.
+            var ground = BABYLON.Mesh.CreateGround("ground1", 32, 24, 2, scene);
+            // var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 32, height: 24}, scene);
+            //var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "worldHeightMap.jpg", 200, 200, 250, 0, 10, scene, false, successCallback);
+            
+            // ground.material = new BABYLON.StandardMaterial("s-mat", scene);
+            // ground.material.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
+
+            var mat = new BABYLON.StandardMaterial("grass", scene);
+            //mat.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
+            mat.diffuseTexture = new BABYLON.Texture("https://upload.wikimedia.org/wikipedia/commons/8/89/Grasses_in_the_Valles_Caldera_2014-06-26.JPG", scene);
+            //mat.diffuseTexture = new BABYLON.Texture("http://i.imgur.com/hMnPwJy.png", scene);
+            // mat.diffuseTexture.hasAlpha = true;
+            // mat.backFaceCulling = false;
+            //mat.opacityTexture = new BABYLON.Texture("https://upload.wikimedia.org/wikipedia/commons/8/89/Grasses_in_the_Valles_Caldera_2014-06-26.JPG", scene);
+            //mat.opacityTexture = new BABYLON.Texture("http://i.imgur.com/HvgwYbE.png", scene);
+
+            //mat.wireframe = true;
+            ground.material = mat;
+            
+            initGUI();
+            /****************************Key Control Multiple Keys************************************************/
+
+            var map = {}; //object for multiple key presses
+            scene.actionManager = new BABYLON.ActionManager(scene);
+
+            scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, function (evt) {
+                map[evt.sourceEvent.key] = evt.sourceEvent.type == "keydown";
+
+            }));
+
+            scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, function (evt) {
+                map[evt.sourceEvent.key] = evt.sourceEvent.type == "keydown";
+            }));
+
+            /****************************Move Sphere******************************************************/
+            scene.registerAfterRender(function () {
+
+                if(map["w"] || map["ArrowUp"]){
+                    sphere.position.z+=0.1
+                } 
+                if(map["a"] || map["ArrowLeft"]){
+                    sphere.position.x-=0.1
+                } 
+                if(map["s"] || map["ArrowDown"]){
+                    sphere.position.z-=0.1
+                } 
+                if(map["d"] || map["ArrowRight"]){
+                    sphere.position.x+=0.1
+                }
+                if ((map["Space"])) {
+                    gravY(-gravity);
+                }
+                if ((map["g"])) {
+                    gravY(-gravity);
+                }
+                if ((map["h"])) {
+                    gravY(gravity);
+                }
+            });
+
+            /**************************** Physics ************************************************/
+            
+            //scene.enablePhysics(null, new BABYLON.CannonJSPlugin());
+            //scene.enablePhysics(null, new BABYLON.OimoJSPlugin());
+            //scene.enablePhysics(null, new BABYLON.AmmoJSPlugin());
+            scene.enablePhysics();
+
+            ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.2, restitution: 0.4 }, scene);
+            box.physicsImpostor = new BABYLON.PhysicsImpostor(box, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 2, friction: 0.2, restitution: 0.5 }, scene);
+
+            cone.physicsImpostor = new BABYLON.PhysicsImpostor(cone, BABYLON.PhysicsImpostor.CylinderImpostor, { mass: 2, friction: 0.1, restitution: 0.9 }, scene);
+
+            var gravY = function(value) {
+                var physicsEngine = scene.getPhysicsEngine();
+                var gx = physicsEngine.gravity.x;
+                var gz = physicsEngine.gravity.z;
+                physicsEngine.setGravity(new BABYLON.Vector3(gx, value, gz));       
+            }
+            //gravY(gravity);
+            
+            return scene;
+        };
+        /******* End of the create scene function ******/
+
+        var scene = createScene(); //Call the createScene function
+
+        // Register a render loop to repeatedly render the scene
+        engine.runRenderLoop(function () {
+                scene.render();
+        });
+
+        // Watch for browser/canvas resize events
+        window.addEventListener("resize", function () {
+                engine.resize();
+        });
+    </script>
+
+   </body>
+
+</html>
