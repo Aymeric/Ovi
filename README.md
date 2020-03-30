@@ -1,8 +1,22 @@
-## Welcome to Ovie
+# Ovie
 
-[Demo](https://aymeric.github.io/Ovie/src/playground.html)
+## Introduction
 
+Ovie is a traditional game played during Easter similar to Bocce but with eggs.
 
+## Getting Started
+
+The game is built using [Babylon.js](https://www.babylonjs.com/) an open source Javascript 3d rendering engine.
+
+### Demo
+
+[Play Now](https://aymeric.github.io/Ovie/src/playground.html)
+
+## Credits
+
+Thanks to the Cadore family for passing down the tradition.
+
+<!--
 ## Welcome to GitHub Pages
 
 You can use the [editor on GitHub](https://github.com/Aymeric/Ovie/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
@@ -40,3 +54,4 @@ Your Pages site will use the layout and styles from the Jekyll theme you have se
 ### Support or Contact
 
 Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+-->

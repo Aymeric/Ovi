@@ -3,7 +3,7 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Babylon Template</title>
+    <title>Ovie</title>
 
     <style>
         html,
@@ -26,11 +26,10 @@
     <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
     <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
-    <script src="https://cdn.babylonjs.com/Oimo.js"></script>
-    <!--
+
     <script src="https://cdn.babylonjs.com/cannon.js"></script>
+    <script src="https://cdn.babylonjs.com/Oimo.js"></script>
     <script src="https://cdn.babylonjs.com/ammo.js"></script>
-    -->
 </head>
 
 <body>
@@ -43,64 +42,48 @@
 
         const gravity = -30;
 
-        /*
-        var rollEgg = function () {
-            var sphere = BABYLON.Mesh.CreateSphere("sphere", 8, 2, scene);//BABYLON.MeshBuilder.CreateSphere("sphere", {diameter:2}, scene);
-            sphere.position = { x: Math.random(), y: 20, z: 0 };
-            var eggmat = new BABYLON.StandardMaterial("egg", scene);
-            //eggmat.diffuseTexture = new BABYLON.Texture("https://png.pngtree.com/png-clipart/20190920/original/pngtree-easter-egg-png-free-png-image_4669160.jpg", scene);
-            eggmat.diffuseTexture = new BABYLON.Texture("https://upload.wikimedia.org/wikipedia/commons/5/54/Bg-easter-eggs.jpg", scene);
-            //eggmat.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
-            eggmat.diffuseTexture.hasAlpha = true;
-            eggmat.backFaceCulling = false;
-            sphere.material = eggmat;
-
-            sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, friction: 0.1, restitution: 0.9 }, scene);
-            //sphere.physicsImpostor.registerOnPhysicsCollide([ground.physicsImpostor, box.physicsImpostor], function(main, collided) {
-	        //    main.object.material.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
-            //});
-        }
-        */
-
         /******* Add the create scene function ******/
         var createScene = function () {
             var scene = new BABYLON.Scene(engine);
-            scene.clearColor = BABYLON.Color3.Purple();
+            //scene.clearColor = BABYLON.Color3.Purple();
 
-            var camera = new BABYLON.ArcRotateCamera("Camera", 3 * Math.PI / 2, Math.PI / 2, 80, new BABYLON.Vector3(0,120,0), scene);//, BABYLON.Vector3.Zero()
+            var camera = new BABYLON.ArcRotateCamera("Camera", 3 * Math.PI / 2, Math.PI / 2, 60, new BABYLON.Vector3(0,60,0), scene);//, BABYLON.Vector3.Zero()
 
             //var camera = new BABYLON.FreeCamera("Camera", new BABYLON.Vector3(0, 0, -20), scene);
             camera.attachControl(canvas, true);
-            camera.checkCollisions = true;
-            camera.applyGravity = true;
+            //camera.checkCollisions = true;
+            //camera.applyGravity = true;
             camera.setTarget(new BABYLON.Vector3(0, 0, 0));
 
-                        
+            var camerasBorderFunction = function () {
+                //Angle
+                if (camera.beta < 0.1)
+                    camera.beta = 0.1;
+                else if (camera.beta > (Math.PI / 2) * 0.99)
+                    camera.beta = (Math.PI / 2) * 0.99;
+
+                //Zoom
+                if (camera.radius > 140)
+                    camera.radius = 140;
+
+                if (camera.radius < 10)
+                    camera.radius = 10;
+            };
+            scene.registerBeforeRender(camerasBorderFunction);
+                
+            // Lighting
             var light = new BABYLON.DirectionalLight("dir02", new BABYLON.Vector3(0.2, -1, 0), scene);
             light.position = new BABYLON.Vector3(0, 80, 0);
-
-            // Material
-            var materialAmiga = new BABYLON.StandardMaterial("amiga", scene);
-            materialAmiga.diffuseTexture = new BABYLON.Texture("https://upload.wikimedia.org/wikipedia/commons/5/54/Bg-easter-eggs.jpg", scene);            
-            //materialAmiga.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
-            materialAmiga.emissiveColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-            //materialAmiga.diffuseTexture.uScale = 5;
-            //materialAmiga.diffuseTexture.vScale = 5;
-
-            var materialAmiga2 = new BABYLON.StandardMaterial("amiga", scene);
-            //materialAmiga2.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
-            materialAmiga2.emissiveColor = new BABYLON.Color3(0.5, 0.5, 0.5);
 
             // Shadows
             var shadowGenerator = new BABYLON.ShadowGenerator(2048, light);
 
-            var initGUI = function (materialAmiga, y, shadowGenerator) {
+            var initGUI = function (shadowGenerator) {
                 // GUI
                 var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
                 var panel = new BABYLON.GUI.StackPanel();
                 //panel.width = 0.5;
-                //panel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
                 panel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
                 advancedTexture.addControl(panel);
 
@@ -109,9 +92,9 @@
                 button.height = "40px";
                 button.color = "white";
                 button.background = "green";
-                // button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+                button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
                 button.onPointerUpObservable.add(function () {
-                    rollEgg(materialAmiga, 60, shadowGenerator);
+                    rollEgg(60, shadowGenerator);
                     //gravY(-25);
                 });
                 /*
@@ -123,8 +106,44 @@
                     */
                 panel.addControl(button);
             }
+            initGUI(shadowGenerator);
             
-            var rollEgg = function(materialAmiga, y, shadowGenerator) {
+            var rollEgg = function(y, shadowGenerator) {
+                /*
+                var plastic = new BABYLON.PBRMaterial("plastic", scene);
+                //plastic.reflectionTexture = hdrTexture;
+                plastic.microSurface = 0.96;
+                plastic.albedoColor = new BABYLON.Color3(0.206, 0.94, 1);
+                plastic.reflectivityColor = new BABYLON.Color3(0.003, 0.003, 0.003);
+                */
+
+                var materialAmiga = new BABYLON.PBRMaterial("amiga", scene);
+                materialAmiga.microSurface = 0.96;
+                materialAmiga.albedoColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
+                // materialAmiga.albedoColor = new BABYLON.Color3(0.206, 0.94, 1);
+                materialAmiga.reflectivityColor = new BABYLON.Color3(0.003, 0.003, 0.003);
+                
+                //materialAmiga.wireframe = true;
+
+                //materialAmiga.diffuseTexture = new BABYLON.Texture("https://upload.wikimedia.org/wikipedia/commons/5/54/Bg-easter-eggs.jpg", scene);            
+                //materialAmiga.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
+                //materialAmiga.diffuseTexture.uScale = 5;
+                //materialAmiga.diffuseTexture.vScale = 5;
+                /*
+                materialAmiga.bumpTexture = new BABYLON.Texture("http://i.imgur.com/wGyk6os.png", scene);	            
+                materialAmiga.useParallax = true;
+                materialAmiga.useParallaxOcclusion = true;
+                materialAmiga.parallaxScaleBias = 0.1;
+                materialAmiga.specularPower = 1000.0;
+                materialAmiga.specularColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+                */
+                
+                /*
+                var materialAmiga = new BABYLON.StandardMaterial("amiga", scene);
+                materialAmiga.emissiveColor = new BABYLON.Color3(0.5, 0.5, 0.5); // Creates pastel colors.
+                materialAmiga.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
+                */
+
                 var sphere = BABYLON.Mesh.CreateSphere("Sphere0", 16, 3, scene);
                 sphere.material = materialAmiga;
 
@@ -135,27 +154,29 @@
                 sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1 }, scene);
             }
 
-
-            initGUI(materialAmiga, y, shadowGenerator);
-
             // Physics
             //scene.enablePhysics(null, new BABYLON.CannonJSPlugin());
-            scene.enablePhysics(null, new BABYLON.OimoJSPlugin());
+            //scene.enablePhysics(null, new BABYLON.OimoJSPlugin());
+            scene.enablePhysics(null, new BABYLON.AmmoJSPlugin());
 
             var physicsEngine = scene.getPhysicsEngine();
             var gx = physicsEngine.gravity.x;
             var gz = physicsEngine.gravity.z;
-            physicsEngine.setGravity(new BABYLON.Vector3(gx, -50, gz));       
+            physicsEngine.setGravity(new BABYLON.Vector3(gx, gravity, gz));       
 
             // Spheres
             var y = 0;
             for (var index = 0; index < 100; index++) {
-                rollEgg(materialAmiga, y, shadowGenerator);
+                rollEgg(y, shadowGenerator);
 
                 y += 2;
             }
 
             /*
+            var materialAmiga2 = new BABYLON.StandardMaterial("amiga", scene);
+            //materialAmiga2.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
+            materialAmiga2.emissiveColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+
             // Link
             var spheres = [];
             for (index = 0; index < 10; index++) {
@@ -173,6 +194,26 @@
                 spheres[index].setPhysicsLinkWith(spheres[index + 1], new BABYLON.Vector3(0, 0.5, 0), new BABYLON.Vector3(0, -0.5, 0));
             }
             */
+
+            // Creation of a ribbon
+            // let's first create many paths along a maths exponential function as an example 
+            var exponentialPath = function (p) {
+                var path = [];
+                for (var i = -10; i < 10; i++) {
+                    path.push(new BABYLON.Vector3(p, i, Math.sin(p / 3) * 5 * Math.exp(-(i - p) * (i - p) / 60) + i / 3));
+                }
+                return path;
+            };
+            // let's populate arrayOfPaths with all these different paths
+            var arrayOfPaths = [];
+            for (var p = 0; p < 20; p++) {
+                arrayOfPaths[p] = exponentialPath(p);
+            }
+
+            // (name, array of paths, closeArray, closePath, offset, scene)
+            var ribbon = BABYLON.Mesh.CreateRibbon("ribbon", arrayOfPaths, false, false, 0, scene);
+            ribbon.position = new BABYLON.Vector3(3, 40, 0);
+            //ribbon.physicsImpostor = new BABYLON.PhysicsImpostor(ribbon, BABYLON.PhysicsImpostor.RibbonImpostor, { mass: 1 }, scene);
 
             // Box
             var box0 = BABYLON.Mesh.CreateBox("Box0", 3, scene);
@@ -208,25 +249,25 @@
             ground.checkCollisions = true;
 
             var border0 = BABYLON.Mesh.CreateBox("border0", 1, scene);
-            border0.scaling = new BABYLON.Vector3(1, 100, 100);
+            border0.scaling = new BABYLON.Vector3(1, 50, 100);
             border0.position.y = -5.0;
             border0.position.x = -50.0;
             border0.checkCollisions = true;
 
             var border1 = BABYLON.Mesh.CreateBox("border1", 1, scene);
-            border1.scaling = new BABYLON.Vector3(1, 100, 100);
+            border1.scaling = new BABYLON.Vector3(1, 50, 100);
             border1.position.y = -5.0;
             border1.position.x = 50.0;
             border1.checkCollisions = true;
 
             var border2 = BABYLON.Mesh.CreateBox("border2", 1, scene);
-            border2.scaling = new BABYLON.Vector3(100, 100, 1);
+            border2.scaling = new BABYLON.Vector3(100, 50, 1);
             border2.position.y = -5.0;
             border2.position.z = 50.0;
             border2.checkCollisions = true;
 
             var border3 = BABYLON.Mesh.CreateBox("border3", 1, scene);
-            border3.scaling = new BABYLON.Vector3(100, 100, 1);
+            border3.scaling = new BABYLON.Vector3(100, 50, 1);
             border3.position.y = -5.0;
             border3.position.z = -50.0;
             border3.checkCollisions = true;
@@ -237,10 +278,18 @@
             groundMat.backFaceCulling = false;
             groundMat.alpha = 0.20;
 
-            var grdMat = new BABYLON.StandardMaterial("grdMat", scene);
-            grdMat.diffuseTexture = new BABYLON.Texture("https://upload.wikimedia.org/wikipedia/commons/8/89/Grasses_in_the_Valles_Caldera_2014-06-26.JPG", scene);
+            //var grdMat = new BABYLON.StandardMaterial("grdMat", scene);
+            //grdMat.diffuseTexture = new BABYLON.Texture("https://upload.wikimedia.org/wikipedia/commons/8/89/Grasses_in_the_Valles_Caldera_2014-06-26.JPG", scene);
 
-            ground.material = grdMat;
+            //Creation of a repeated textured material
+            var materialPlane = new BABYLON.StandardMaterial("texturePlane", scene);
+            materialPlane.diffuseTexture = new BABYLON.Texture("https://images.pexels.com/photos/413195/pexels-photo-413195.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260", scene);
+            materialPlane.diffuseTexture.uScale = 6.0;//Repeat 5 times on the Vertical Axes
+            materialPlane.diffuseTexture.vScale = 6.0;//Repeat 5 times on the Horizontal Axes
+            materialPlane.backFaceCulling = false;//Always show the front and the back of an element
+
+
+            ground.material = materialPlane;
             border0.material = groundMat;
             border1.material = groundMat;
             border2.material = groundMat;
@@ -250,10 +299,10 @@
             // Physics
             box0.physicsImpostor = new BABYLON.PhysicsImpostor(box0, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 2, friction: 0.4, restitution: 0.3 }, scene);
             ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, scene);
-            border0.physicsImpostor = new BABYLON.PhysicsImpostor(border0, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0 }, scene);
-            border1.physicsImpostor = new BABYLON.PhysicsImpostor(border1, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0 }, scene);
-            border2.physicsImpostor = new BABYLON.PhysicsImpostor(border2, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0 }, scene);
-            border3.physicsImpostor = new BABYLON.PhysicsImpostor(border3, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0 }, scene);
+            border0.physicsImpostor = new BABYLON.PhysicsImpostor(border0, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.9 }, scene);
+            border1.physicsImpostor = new BABYLON.PhysicsImpostor(border1, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.9 }, scene);
+            border2.physicsImpostor = new BABYLON.PhysicsImpostor(border2, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.9 }, scene);
+            border3.physicsImpostor = new BABYLON.PhysicsImpostor(border3, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.9 }, scene);
 
             part0.physicsImpostor = new BABYLON.PhysicsImpostor(part0, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 2, friction: 0.4, restitution: 0.3 }, scene);
 
