@@ -1,6 +1,7 @@
 ## Welcome to Ovie
 
-[Demo](https://aymeric.github.io/Ovie/src/index.html)
+[Demo](https://aymeric.github.io/Ovie/src/playground.html)
+
 
 ## Welcome to GitHub Pages
 
