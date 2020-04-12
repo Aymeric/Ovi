@@ -40,14 +40,14 @@
         var canvas = document.getElementById("renderCanvas"); // Get the canvas element
         var engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
 
-        const gravity = -30;
+        const gravity = -100;
 
         /******* Add the create scene function ******/
         var createScene = function () {
             var scene = new BABYLON.Scene(engine);
             //scene.clearColor = BABYLON.Color3.Purple();
 
-            var camera = new BABYLON.ArcRotateCamera("Camera", 3 * Math.PI / 2, Math.PI / 2, 60, new BABYLON.Vector3(0,60,0), scene);//, BABYLON.Vector3.Zero()
+            var camera = new BABYLON.ArcRotateCamera("Camera", 3 * Math.PI / 2, Math.PI / 2, 90, new BABYLON.Vector3(0,60,0), scene);//, BABYLON.Vector3.Zero()
 
             //var camera = new BABYLON.FreeCamera("Camera", new BABYLON.Vector3(0, 0, -20), scene);
             camera.attachControl(canvas, true);
@@ -87,6 +87,18 @@
                 panel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
                 advancedTexture.addControl(panel);
 
+                var restartButton = BABYLON.GUI.Button.CreateSimpleButton("but", "Restart Game");
+                restartButton.width = 0.15;
+                restartButton.height = "40px";
+                restartButton.color = "white";
+                restartButton.background = "gray";
+                restartButton.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+                restartButton.onPointerUpObservable.add(function () {
+                    dropEggs();
+                    //gravY(-25);
+                });
+                panel.addControl(restartButton);
+
                 var button = BABYLON.GUI.Button.CreateSimpleButton("but", "Roll Egg");
                 button.width = 0.15;
                 button.height = "40px";
@@ -94,7 +106,7 @@
                 button.background = "green";
                 button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
                 button.onPointerUpObservable.add(function () {
-                    rollEgg(60, shadowGenerator);
+                    rollEgg(40, shadowGenerator);
                     //gravY(-25);
                 });
                 /*
@@ -147,11 +159,21 @@
                 var sphere = BABYLON.Mesh.CreateSphere("Sphere0", 16, 3, scene);
                 sphere.material = materialAmiga;
 
-                sphere.position = new BABYLON.Vector3(Math.random() * 20 - 10, y, Math.random() * 10 - 5);
+                sphere.position = new BABYLON.Vector3(Math.random() * 20 - 10, y, Math.random() * 10 + 45);
 
                 shadowGenerator.addShadowCaster(sphere);
 
                 sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1 }, scene);
+            }
+
+            var dropEggs = function() {
+                // Spheres
+                var y = 0;
+                for (var index = 0; index < 100; index++) {
+                    rollEgg(y, shadowGenerator);
+
+                    y += 2;
+                }
             }
 
             // Physics
@@ -162,15 +184,9 @@
             var physicsEngine = scene.getPhysicsEngine();
             var gx = physicsEngine.gravity.x;
             var gz = physicsEngine.gravity.z;
-            physicsEngine.setGravity(new BABYLON.Vector3(gx, gravity, gz));       
+            physicsEngine.setGravity(new BABYLON.Vector3(gx, gravity, gz));
 
-            // Spheres
-            var y = 0;
-            for (var index = 0; index < 100; index++) {
-                rollEgg(y, shadowGenerator);
-
-                y += 2;
-            }
+            dropEggs();
 
             /*
             var materialAmiga2 = new BABYLON.StandardMaterial("amiga", scene);
@@ -199,8 +215,9 @@
             // let's first create many paths along a maths exponential function as an example 
             var exponentialPath = function (p) {
                 var path = [];
-                for (var i = -10; i < 10; i++) {
-                    path.push(new BABYLON.Vector3(p, i, Math.sin(p / 3) * 5 * Math.exp(-(i - p) * (i - p) / 60) + i / 3));
+                for (var i = -20; i < 10; i++) {
+                    // path.push(new BABYLON.Vector3(p, i, Math.sin(p / 3) * 5 * Math.exp(-(i - p) * (i - p) / 60) + i / 3));
+                    path.push(new BABYLON.Vector3(p, i, Math.sin(p / 5) * 5));
                 }
                 return path;
             };
@@ -211,9 +228,14 @@
             }
 
             // (name, array of paths, closeArray, closePath, offset, scene)
+            var ribbon = BABYLON.MeshBuilder.CreateRibbon("ribbon", {pathArray: arrayOfPaths, sideOrientation: BABYLON.Mesh.DOUBLESIDE, updatable: true}, scene);
+            /*
             var ribbon = BABYLON.Mesh.CreateRibbon("ribbon", arrayOfPaths, false, false, 0, scene);
-            ribbon.position = new BABYLON.Vector3(3, 40, 0);
-            //ribbon.physicsImpostor = new BABYLON.PhysicsImpostor(ribbon, BABYLON.PhysicsImpostor.RibbonImpostor, { mass: 1 }, scene);
+            */
+            ribbon.rotation = new BABYLON.Vector3(20, 0, 0);
+            ribbon.position = new BABYLON.Vector3(-10, 30, 50);
+            ribbon.alpha = 0.80;
+            shadowGenerator.addShadowCaster(ribbon);
 
             // Box
             var box0 = BABYLON.Mesh.CreateBox("Box0", 3, scene);
@@ -297,8 +319,11 @@
             ground.receiveShadows = true;
 
             // Physics
+            //ribbon.physicsImpostor = new BABYLON.PhysicsImpostor(ribbon, BABYLON.PhysicsImpostor.RibbonImpostor, { mass: 2, friction: 0.4, restitution: 0.3 }, scene);
+            ribbon.physicsImpostor = new BABYLON.PhysicsImpostor(ribbon, BABYLON.PhysicsImpostor.MeshImpostor,{mass:0, friction:1},scene);  
+
             box0.physicsImpostor = new BABYLON.PhysicsImpostor(box0, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 2, friction: 0.4, restitution: 0.3 }, scene);
-            ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.7 }, scene);
+            ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 2, restitution: 0.7 }, scene);
             border0.physicsImpostor = new BABYLON.PhysicsImpostor(border0, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.9 }, scene);
             border1.physicsImpostor = new BABYLON.PhysicsImpostor(border1, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.9 }, scene);
             border2.physicsImpostor = new BABYLON.PhysicsImpostor(border2, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction: 0.5, restitution: 0.9 }, scene);
