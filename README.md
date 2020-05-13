@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Ovie is a traditional game played during Easter similar to Bocce but with eggs.
+Ovi is a traditional game played during Easter similar to Bocce but with eggs.
 
 ## Getting Started
 
@@ -10,7 +10,7 @@ The game is built using [Babylon.js](https://www.babylonjs.com/) an open source 
 
 ### Demo
 
-[Play Now](https://aymeric.github.io/Ovie/src/playground.html)
+[Play Now](https://aymeric.github.io/Ovi/src/playground.html)
 
 ## Credits
 
@@ -19,7 +19,7 @@ Thanks to the Cadore family for passing down the tradition.
 <!--
 ## Welcome to GitHub Pages
 
-You can use the [editor on GitHub](https://github.com/Aymeric/Ovie/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+You can use the [editor on GitHub](https://github.com/Aymeric/Ovi/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
 
 Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
